@@ -3,92 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ 即時人氣王投票站</title>
+    <title>宜慶地政人氣王投票</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --leader-gradient: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-            --bg-color: #f0f2f5;
+            --primary-gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            --leader-gradient: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+            --bg-color: #f8fafc;
         }
 
-        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg-color); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; }
         
-        .vote-card { width: 90%; max-width: 450px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        .vote-card { width: 100%; max-width: 550px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
         
-        h1 { text-align: center; color: #333; margin-bottom: 10px; font-size: 24px; }
-        .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 30px; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
+        h1 { color: #1e3a8a; margin: 0; font-size: 26px; letter-spacing: 2px; }
+        .subtitle { color: #64748b; font-size: 14px; margin-top: 8px; }
 
-        .candidate-item { margin-bottom: 25px; }
+        .candidate-list { display: flex; flex-direction: column; gap: 18px; }
+        .candidate-item { background: #fff; border: 1px solid #f1f5f9; padding: 15px; border-radius: 12px; transition: 0.3s; }
+        .candidate-item.is-leading { border-color: #fbbf24; background: #fffdf5; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.1); }
 
-        .candidate-info { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
-        .name { font-weight: bold; font-size: 18px; color: #444; }
-        .votes { font-size: 14px; color: #888; }
-        .vote-count { font-weight: 800; color: #764ba2; font-size: 20px; }
+        .candidate-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .name { font-weight: bold; font-size: 17px; color: #334155; display: flex; align-items: center; }
+        .vote-stats { text-align: right; }
+        .vote-count { font-weight: 800; color: #1e3a8a; font-size: 18px; }
+        .percent { font-size: 12px; color: #94a3b8; margin-left: 5px; }
 
-        /* 進度條容器 */
-        .progress-container {
-            height: 12px; background: #e0e0e0; border-radius: 6px; overflow: hidden; position: relative;
+        /* 進度條 */
+        .progress-bg { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
+        .progress-fill { 
+            height: 100%; width: 0%; background: #94a3b8; border-radius: 5px; 
+            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1); 
         }
-
-        /* 動態進度條 */
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: #ccc;
-            border-radius: 6px;
-            transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .is-leader-bar {
-            background: var(--primary-gradient);
-            box-shadow: 0 0 10px rgba(118, 75, 162, 0.3);
-        }
-
+        .leader-fill { background: var(--leader-gradient); }
+        
         .vote-btn {
-            width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px;
-            background: #333; color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
+            width: 100%; padding: 10px; margin-top: 12px; border: none; border-radius: 8px;
+            background: #1e3a8a; color: white; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
+        .vote-btn:hover:not(:disabled) { background: #1e40af; transform: translateY(-1px); }
+        .vote-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
 
-        .vote-btn:hover:not(:disabled) { background: #000; transform: translateY(-2px); }
-        .vote-btn:disabled { background: #ccc; cursor: not-allowed; }
-
-        .voted-msg {
-            text-align: center; color: #e53e3e; font-size: 14px; margin-top: 15px; font-weight: bold;
-        }
-
-        /* 獎杯動畫 */
-        .crown { margin-right: 5px; }
+        .footer-info { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
+        .voted-alert { color: #ef4444; font-weight: bold; background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div id="app" class="vote-card">
-    <h1>🏆 人氣王大賽</h1>
-    <p class="subtitle">即時戰況：誰才是最後的贏家？</p>
-
-    <div v-for="p in players" :key="p.id" class="candidate-item">
-        <div class="candidate-info">
-            <span class="name">
-                <span v-if="isLeader(p.votes)" class="crown">👑</span>{{ p.name }}
-            </span>
-            <span class="votes">
-                <span class="vote-count">{{ p.votes }}</span> 票 ({{ getPercent(p.votes) }}%)
-            </span>
-        </div>
-        <div class="progress-container">
-            <div class="progress-bar" 
-                 :class="{'is-leader-bar': isLeader(p.votes)}"
-                 :style="{ width: getPercent(p.votes) + '%' }">
-            </div>
-        </div>
-        <button class="vote-btn" :disabled="hasVoted" @click="handleVote(p.id)">
-            {{ hasVoted ? '感謝投票' : '投給他' }}
-        </button>
+    <div class="header">
+        <h1>🏆 宜慶地政人氣王</h1>
+        <div class="subtitle">即時戰況統計</div>
     </div>
 
-    <div v-if="hasVoted" class="voted-msg">
-        ⚠️ 系統偵測到您已完成投票，每人限投一票。
+    <div class="candidate-list">
+        <div v-for="p in players" :key="p.id" class="candidate-item" :class="{'is-leading': isLeader(p.votes)}">
+            <div class="candidate-info">
+                <span class="name">
+                    <span v-if="isLeader(p.votes)" style="margin-right: 5px;">👑</span>
+                    {{ p.name }}
+                </span>
+                <div class="vote-stats">
+                    <span class="vote-count">{{ p.votes }}</span> <small>票</small>
+                    <span class="percent">({{ getPercent(p.votes) }}%)</span>
+                </div>
+            </div>
+            <div class="progress-bg">
+                <div class="progress-fill" 
+                     :class="{'leader-fill': isLeader(p.votes)}"
+                     :style="{ width: getPercent(p.votes) + '%' }">
+                </div>
+            </div>
+            <button class="vote-btn" :disabled="hasVoted" @click="handleVote(p.id)">
+                {{ hasVoted ? '已完成投票' : '投給此單位' }}
+            </button>
+        </div>
+    </div>
+
+    <div class="footer-info">
+        <div v-if="hasVoted" class="voted-alert">
+            您今日已投過票，每人限投一票。
+        </div>
+        <p style="color: #94a3b8; font-size: 12px;">總計收票數：{{ totalVotes }}</p>
     </div>
 </div>
 
@@ -99,21 +96,25 @@
         data() {
             return {
                 hasVoted: false,
-                // 這裡的初始數據可以隨意修改
                 players: [
-                    { id: 1, name: '艾瑞絲 Iris', votes: 42 },
-                    { id: 2, name: '里昂 Leon', votes: 38 },
-                    { id: 3, name: '娜娜 Nana', votes: 45 }
+                    { id: 1, name: '華平所', votes: 0 },
+                    { id: 2, name: '安平所', votes: 0 },
+                    { id: 3, name: '建設部', votes: 0 },
+                    { id: 4, name: '煒澂組(K01)', votes: 0 },
+                    { id: 5, name: '佩婷組(P01)', votes: 0 },
+                    { id: 6, name: '永康所', votes: 0 },
+                    { id: 7, name: '橋頭所', votes: 0 },
+                    { id: 8, name: '善化所', votes: 0 },
+                    { id: 9, name: '嘉義所', votes: 0 }
                 ]
             }
         },
         mounted() {
-            // 檢查本地存儲
-            if (localStorage.getItem('user_voted')) {
+            if (localStorage.getItem('yiqing_voted')) {
                 this.hasVoted = true;
             }
-            // 讀取之前的模擬票數 (純前端Demo用)
-            const savedVotes = localStorage.getItem('mock_votes');
+            // 讀取本地票數紀錄
+            const savedVotes = localStorage.getItem('yiqing_votes_data');
             if (savedVotes) {
                 this.players = JSON.parse(savedVotes);
             }
@@ -123,7 +124,8 @@
                 return this.players.reduce((sum, p) => sum + p.votes, 0);
             },
             maxVote() {
-                return Math.max(...this.players.map(p => p.votes));
+                const votes = this.players.map(p => p.votes);
+                return Math.max(...votes);
             }
         },
         methods: {
@@ -141,16 +143,14 @@
                 if (target) {
                     target.votes++;
                     this.hasVoted = true;
-                    // 紀錄到瀏覽器中
-                    localStorage.setItem('user_voted', 'true');
-                    localStorage.setItem('mock_votes', JSON.stringify(this.players));
+                    // 儲存狀態
+                    localStorage.setItem('yiqing_voted', 'true');
+                    localStorage.setItem('yiqing_votes_data', JSON.stringify(this.players));
                 }
             }
         }
     }).mount('#app');
 </script>
 
-</body>
-</html>
 </body>
 </html>
