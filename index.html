@@ -7,6 +7,8 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
         :root {
             --yiqing-main: #215440;
@@ -45,10 +47,10 @@
         .progress-fill { height: 100%; background: var(--yiqing-main); transition: width 1s ease; opacity: 0.4; }
         .leader-fill { background: var(--yiqing-gold); opacity: 1; }
 
-        .vote-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 16px; }
+        .vote-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .btn-ready { background: var(--yiqing-main); color: white; }
-        .btn-ready:hover { opacity: 0.9; }
-        .btn-voted-target { background: #dcfce7; color: #166534; }
+        .btn-ready:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-voted-target { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .btn-unvoted { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
         .btn-expired { background: #cbd5e1; color: white; cursor: not-allowed; }
 
@@ -91,7 +93,7 @@
             
             <template v-if="!isExpired">
                 <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">👍 請投我一票！支持我！</button>
-                <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">💖 感謝您的支持！</button>
+                <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">🎉 感謝您的支持！</button>
                 <button v-else class="vote-btn btn-unvoted">嗚嗚嗚 😭</button>
             </template>
             <button v-else class="vote-btn btn-expired">活動已圓滿結束</button>
@@ -131,7 +133,6 @@
                     '善化所 ✦ 杏敏所長': 0, '橋頭所 ✦ 惠婷所長': 0, '總所 ✦ 煒澂組': 0,
                     '總所 ✦ 佩婷組': 0, '嘉義所 ✦ 美伶所長': 0, '建設部': 0
                 },
-                // 修改後的截止時間：2026/03/06 12:00:00
                 endTime: new Date("2026/03/06 12:00:00").getTime(),
                 countdownText: "",
                 isExpired: false
@@ -144,6 +145,8 @@
             });
             this.updateTimer();
             setInterval(this.updateTimer, 1000);
+            
+            // 如果進來時已經投過票，不自動噴發（只在點擊瞬間噴發）
         },
         computed: {
             sortedPlayers() {
@@ -170,16 +173,38 @@
             },
             handleVote(name) {
                 if (this.hasVoted || this.isExpired) return;
+                
+                // 啟動彩帶噴發動畫
+                this.launchConfetti();
+
                 votesRef.child(name).transaction(v => (v || 0) + 1);
                 this.hasVoted = true;
                 this.votedTarget = name;
                 localStorage.setItem('voted_yiqing_2026', 'true');
                 localStorage.setItem('voted_target_name', name);
+            },
+            launchConfetti() {
+                const duration = 3 * 1000;
+                const animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                function randomInRange(min, max) {
+                    return Math.random() * (max - min) + min;
+                }
+
+                const interval = setInterval(function() {
+                    const timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) return clearInterval(interval);
+
+                    const particleCount = 50 * (timeLeft / duration);
+                    // 兩邊對噴煙火感
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+                }, 250);
             }
         }
     }).mount('#app');
 </script>
 </body>
 </html>
-</body>
 </html>
