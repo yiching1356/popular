@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>🏆 宜慶地政人氣王爭霸戰</title>
+    <meta property="og:title" content="🏆 宜慶地政人氣王爭霸戰">
+    <meta property="og:description" content="宜慶地政 2026 感恩餐會人氣王投票活動。活動截止至 3/6 中午 12:00，快來為你支持的團隊投下一票！">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yiching1356.github.io/popular/">
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
@@ -16,6 +22,8 @@
             --yiqing-gold: #d4af37;
             --glass-bg: rgba(255, 255, 255, 0.95);
         }
+        /* 避免 Vue 渲染前的閃爍 (防止顯示 {{...}}) */
+        [v-cloak] { display: none; }
 
         body { 
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; 
@@ -40,7 +48,6 @@
             border-left: 3px solid var(--yiqing-gold); padding-left: 15px; display: inline-block; text-align: left;
         }
 
-        /* 倒數計時區樣式 */
         .countdown-container { 
             background: var(--yiqing-main); color: white; padding: 15px; border-radius: 20px;
             text-align: center; margin: 25px 0; box-shadow: 0 10px 20px rgba(33, 84, 64, 0.2);
@@ -72,7 +79,6 @@
             height: 100%; background: var(--yiqing-main); transition: width 1.2s cubic-bezier(0.1, 0.7, 1.0, 0.1); 
             position: relative;
         }
-        /* 流光動畫 */
         .progress-fill::after {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
@@ -94,7 +100,7 @@
 </head>
 <body>
 
-<div id="app" class="vote-card">
+<div id="app" class="vote-card" v-cloak>
     <div class="header">
         <h1>🏆 宜慶地政人氣王</h1>
         <div class="subtitle">
@@ -161,20 +167,22 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const votesRef = db.ref('yiqing_2026_votes');
+    // 修改資料庫節點名稱，達成自動歸零
+    const votesRef = db.ref('yiqing_OFFICIAL_2026');
 
     const { createApp } = Vue;
     createApp({
         data() {
             return {
-                hasVoted: !!localStorage.getItem('voted_yiqing_2026'),
-                votedTarget: localStorage.getItem('voted_target_name'),
+                // 修改 localStorage 名稱，達成自動清除測試紀錄
+                hasVoted: !!localStorage.getItem('voted_OFFICIAL_2026'),
+                votedTarget: localStorage.getItem('voted_target_OFFICIAL'),
                 playersData: {
                     '永康所 ✦ 子琳所長': 0, '華平所 ✦ 瑜萍所長': 0, '安平所 ✦ 秀如所長': 0,
                     '善化所 ✦ 杏敏所長': 0, '橋頭所 ✦ 惠婷所長': 0, '總所 ✦ 煒澂組': 0,
                     '總所 ✦ 佩婷組': 0, '嘉義所 ✦ 美伶所長': 0, '建設部': 0
                 },
-                endTime: new Date("2026/03/06 12:00:00").getTime(),
+                endTime: new Date("2026-03-06T12:00:00").getTime(),
                 countdownText: "",
                 isExpired: false
             }
@@ -216,11 +224,10 @@
                 votesRef.child(name).transaction(v => (v || 0) + 1);
                 this.hasVoted = true;
                 this.votedTarget = name;
-                localStorage.setItem('voted_yiqing_2026', 'true');
-                localStorage.setItem('voted_target_name', name);
+                localStorage.setItem('voted_OFFICIAL_2026', 'true');
+                localStorage.setItem('voted_target_OFFICIAL', name);
             },
             launchConfetti() {
-                // 發射噴發彩帶動畫
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#215440', '#d4af37', '#ffffff'] });
             }
         }
