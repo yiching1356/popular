@@ -20,7 +20,6 @@
         h1 { color: var(--yiqing-main); font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 1px; }
         .subtitle { font-size: 15px; color: #4b5563; margin-top: 15px; line-height: 1.6; background: #f1f5f9; padding: 15px; border-radius: 15px; }
 
-        /* 調整後的計時器位置樣式 */
         .countdown-container { 
             background: #fffdf5; border: 1px dashed var(--yiqing-gold); 
             padding: 12px; border-radius: 12px; text-align: center; margin: 20px 0; 
@@ -33,7 +32,6 @@
         .candidate-item { background: #fff; border: 1px solid #e2e8f0; padding: 18px; border-radius: 20px; margin-bottom: 12px; position: relative; transition: 0.3s; }
         .is-leading { border: 2px solid var(--yiqing-gold); background: #fdfdf2; box-shadow: 0 5px 15px rgba(198, 163, 0, 0.1); }
 
-        /* 激勵標籤 */
         .motivational-tag { font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
         .tag-gold { background: var(--yiqing-gold); color: white; }
         .tag-silver { background: #e2e8f0; color: #475569; animation: pulse 1.5s infinite; }
@@ -133,7 +131,8 @@
                     '善化所 ✦ 杏敏所長': 0, '橋頭所 ✦ 惠婷所長': 0, '總所 ✦ 煒澂組': 0,
                     '總所 ✦ 佩婷組': 0, '嘉義所 ✦ 美伶所長': 0, '建設部': 0
                 },
-                endTime: new Date("2026/02/11 17:30:00").getTime(),
+                // 修改後的截止時間：2026/03/06 12:00:00
+                endTime: new Date("2026/03/06 12:00:00").getTime(),
                 countdownText: "",
                 isExpired: false
             }
@@ -180,5 +179,7 @@
         }
     }).mount('#app');
 </script>
+</body>
+</html>
 </body>
 </html>
