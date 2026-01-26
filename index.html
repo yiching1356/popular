@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>🏆 宜慶地政人氣王爭霸戰</title>
+    <meta property="og:title" content="🏆 宜慶地政人氣王爭霸戰">
+    <meta property="og:description" content="謝謝大家支持！歡迎投下喜歡的代書，爭取感恩餐會最高榮耀！">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yiching1356.github.io/popular/">
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
@@ -40,7 +46,6 @@
             border-left: 3px solid var(--yiqing-gold); padding-left: 15px; display: inline-block; text-align: left;
         }
 
-        /* 倒數計時區樣式 */
         .countdown-container { 
             background: var(--yiqing-main); color: white; padding: 15px; border-radius: 20px;
             text-align: center; margin: 25px 0; box-shadow: 0 10px 20px rgba(33, 84, 64, 0.2);
@@ -72,7 +77,6 @@
             height: 100%; background: var(--yiqing-main); transition: width 1.2s cubic-bezier(0.1, 0.7, 1.0, 0.1); 
             position: relative;
         }
-        /* 流光動畫 */
         .progress-fill::after {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
@@ -220,13 +224,10 @@
                 localStorage.setItem('voted_target_name', name);
             },
             launchConfetti() {
-                // 發射噴發彩帶動畫
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#215440', '#d4af37', '#ffffff'] });
             }
         }
     }).mount('#app');
 </script>
-</body>
-</html>
 </body>
 </html>
