@@ -3,53 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宜慶地政人氣王投票</title>
+    <title>🏆 宜慶地政人氣王 (實時戰況)</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <style>
-        :root {
-            --yiqing-blue: #1e3a8a;
-            --yiqing-gold: #f59e0b;
-            --bg-soft: #f1f5f9;
-        }
-
-        body { font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif; background: var(--bg-soft); margin: 0; padding: 20px; display: flex; justify-content: center; }
-        
-        .vote-card { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        
+        :root { --yiqing-blue: #1e3a8a; --yiqing-gold: #f59e0b; --bg-soft: #f1f5f9; }
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background: var(--bg-soft); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .vote-card { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .header { text-align: center; margin-bottom: 25px; }
-        h1 { color: var(--yiqing-blue); margin: 0; font-size: 28px; letter-spacing: 1px; }
-        .divider { height: 4px; width: 60px; background: var(--yiqing-gold); margin: 15px auto; border-radius: 2px; }
-
+        h1 { color: var(--yiqing-blue); margin: 0; font-size: 26px; }
         .candidate-list { display: flex; flex-direction: column; gap: 15px; }
-        .candidate-item { 
-            background: #fff; border: 2px solid #e2e8f0; padding: 16px; border-radius: 16px; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-        
-        .candidate-item.is-leading { border-color: var(--yiqing-gold); background: #fffcf0; transform: scale(1.02); }
-
-        .candidate-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .name { font-weight: bold; font-size: 18px; color: #1e293b; display: flex; align-items: center; }
-        .vote-stats { text-align: right; font-weight: 800; color: var(--yiqing-blue); }
-
-        /* 進度條槽 */
+        .candidate-item { border: 2px solid #e2e8f0; padding: 15px; border-radius: 16px; transition: 0.3s; position: relative; }
+        .candidate-item.is-leading { border-color: var(--yiqing-gold); background: #fffcf0; transform: scale(1.01); }
+        .candidate-info { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
+        .name { font-weight: bold; font-size: 17px; }
         .progress-track { height: 14px; background: #f1f5f9; border-radius: 7px; overflow: hidden; margin-bottom: 12px; }
-        .progress-fill { 
-            height: 100%; width: 0%; background: #94a3b8; border-radius: 7px; 
-            transition: width 1.2s ease-out; 
-        }
-        .leader-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
-        
-        .vote-btn {
-            width: 100%; padding: 12px; border: none; border-radius: 10px;
-            background: var(--yiqing-blue); color: white; font-weight: bold; font-size: 16px;
-            cursor: pointer; transition: 0.3s;
-        }
-        .vote-btn:hover:not(:disabled) { background: #1e40af; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2); }
+        .progress-fill { height: 100%; width: 0%; background: #94a3b8; transition: width 1s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
+        .leader-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); box-shadow: 0 0 10px rgba(245,158,11,0.3); }
+        .vote-btn { width: 100%; padding: 12px; border: none; border-radius: 10px; background: var(--yiqing-blue); color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
         .vote-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
-
-        .footer { text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
-        .alert-box { color: #b91c1c; background: #fee2e2; padding: 12px; border-radius: 10px; font-weight: bold; margin-bottom: 15px; }
+        .footer { text-align: center; margin-top: 25px; color: #94a3b8; font-size: 14px; }
+        .alert-voted { color: #ef4444; background: #fee2e2; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; text-align: center; }
     </style>
 </head>
 <body>
@@ -57,81 +32,89 @@
 <div id="app" class="vote-card">
     <div class="header">
         <h1>🏆 宜慶地政人氣王</h1>
-        <div class="divider"></div>
-        <p style="color: #64748b;">支持你心目中的優秀單位！</p>
+        <p style="color: #64748b;">實時戰況：每一秒都在變動！</p>
     </div>
 
+    <div v-if="hasVoted" class="alert-voted">您今天已完成投票，感謝參與！</div>
+
     <div class="candidate-list">
-        <div v-for="p in players" :key="p.id" class="candidate-item" :class="{'is-leading': isLeader(p.votes)}">
+        <div v-for="(votes, name) in players" :key="name" class="candidate-item" :class="{'is-leading': isLeader(votes)}">
             <div class="candidate-info">
                 <span class="name">
-                    <span v-if="isLeader(p.votes)" style="margin-right: 8px;">👑</span>
-                    {{ p.name }}
+                    <span v-if="isLeader(votes)">👑 </span>{{ name }}
                 </span>
-                <div class="vote-stats">
-                    <span>{{ p.votes }} 票</span>
-                    <small style="color:#94a3b8; margin-left:8px;">{{ getPercent(p.votes) }}%</small>
-                </div>
+                <span style="font-weight: 800; color: #1e3a8a;">{{ votes }} 票 <small>({{ getPercent(votes) }}%)</small></span>
             </div>
             <div class="progress-track">
-                <div class="progress-fill" 
-                     :class="{'leader-fill': isLeader(p.votes)}"
-                     :style="{ width: getPercent(p.votes) + '%' }">
-                </div>
+                <div class="progress-fill" :class="{'leader-fill': isLeader(votes)}" :style="{ width: getPercent(votes) + '%' }"></div>
             </div>
-            <button class="vote-btn" :disabled="hasVoted" @click="handleVote(p.id)">
-                {{ hasVoted ? '已完成投票' : '投給此單位' }}
+            <button class="vote-btn" :disabled="hasVoted" @click="handleVote(name)">
+                {{ hasVoted ? '已記錄投票' : '投給此單位' }}
             </button>
         </div>
     </div>
-
     <div class="footer">
-        <div v-if="hasVoted" class="alert-box">
-            您今日已完成投票，感謝您的參與！
-        </div>
-        <div style="font-size: 14px; color: #94a3b8;">
-            總票數：<strong style="color: #475569;">{{ totalVotes }}</strong>
-        </div>
+        雲端即時同步中 | 總收票數：{{ totalVotes }}
     </div>
 </div>
 
 <script>
-    const { createApp } = Vue;
+    // 你的專屬 Firebase 配置
+    const firebaseConfig = {
+        apiKey: "AIzaSyBof1GHVYDUHqcsNQWW7grVNNxT_mt8sqA",
+        authDomain: "yiqing-vote.firebaseapp.com",
+        databaseURL: "https://yiqing-vote-default-rtdb.firebaseio.com",
+        projectId: "yiqing-vote",
+        storageBucket: "yiqing-vote.firebasestorage.app",
+        messagingSenderId: "717925770555",
+        appId: "1:717925770555:web:a2554db9a8e2ffe110031e",
+        measurementId: "G-TSEDT2MYHK"
+    };
 
+    // 初始化 Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const votesRef = db.ref('yiqing_2026_votes');
+
+    const { createApp } = Vue;
     createApp({
         data() {
             return {
-                hasVoted: false,
-                players: [
-                    { id: 1, name: '華平所 ✦ 瑜萍所長', votes: 0 },
-                    { id: 2, name: '安平所 ✦ 秀如所長', votes: 0 },
-                    { id: 3, name: '建設部', votes: 0 },
-                    { id: 4, name: '總所 ✦ 煒澂組(K01)', votes: 0 },
-                    { id: 5, name: '總所 ✦ 佩婷組(P01)', votes: 0 },
-                    { id: 6, name: '永康所 ✦ 子琳所長', votes: 0 },
-                    { id: 7, name: '橋頭所 ✦ 惠婷所長', votes: 0 },
-                    { id: 8, name: '善化所 ✦ 杏敏所長', votes: 0 },
-                    { id: 9, name: '嘉義所 ✦ 美伶所長', votes: 0 }
-                ]
+                hasVoted: localStorage.getItem('voted_yiqing_2026'),
+                players: {
+                    '華平所 ✦ 瑜萍所長': 0,
+                    '安平所 ✦ 秀如所長': 0,
+                    '建設部': 0,
+                    '總所 ✦ 煒澂組(K01)': 0,
+                    '總所 ✦ 佩婷組(P01)': 0,
+                    '永康所 ✦ 子琳所長': 0,
+                    '橋頭所 ✦ 惠婷所長': 0,
+                    '善化所 ✦ 杏敏所長': 0,
+                    '嘉義所 ✦ 美伶所長': 0
+                }
             }
         },
         mounted() {
-            if (localStorage.getItem('yiqing_voted_status')) {
-                this.hasVoted = true;
-            }
-            // 讀取本地模擬票數
-            const savedData = localStorage.getItem('yiqing_live_data');
-            if (savedData) {
-                this.players = JSON.parse(savedData);
-            }
+            // 即時同步雲端數據
+            votesRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    // 將雲端數據合併到現有列表
+                    Object.keys(this.players).forEach(key => {
+                        if (data[key] !== undefined) {
+                            this.players[key] = data[key];
+                        }
+                    });
+                }
+            });
         },
         computed: {
             totalVotes() {
-                return this.players.reduce((sum, p) => sum + p.votes, 0);
+                return Object.values(this.players).reduce((a, b) => a + b, 0);
             },
             maxVote() {
-                const votes = this.players.map(p => p.votes);
-                return Math.max(...votes);
+                const vals = Object.values(this.players);
+                return Math.max(...vals);
             }
         },
         methods: {
@@ -142,19 +125,22 @@
             isLeader(votes) {
                 return votes === this.maxVote && votes > 0;
             },
-            handleVote(id) {
+            handleVote(name) {
                 if (this.hasVoted) return;
-                const target = this.players.find(p => p.id === id);
-                if (target) {
-                    target.votes++;
-                    this.hasVoted = true;
-                    localStorage.setItem('yiqing_voted_status', 'true');
-                    localStorage.setItem('yiqing_live_data', JSON.stringify(this.players));
-                }
+                
+                // 原子操作：確保多人同時點擊時票數正確增加
+                votesRef.child(name).transaction((currentVotes) => {
+                    return (currentVotes || 0) + 1;
+                });
+
+                this.hasVoted = true;
+                localStorage.setItem('voted_yiqing_2026', 'true');
             }
         }
     }).mount('#app');
 </script>
+</body>
+</html>
 
 </body>
 </html>
