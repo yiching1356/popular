@@ -22,7 +22,6 @@
             --yiqing-gold: #d4af37;
             --glass-bg: rgba(255, 255, 255, 0.95);
         }
-        /* 避免 Vue 渲染前的閃爍 (防止顯示 {{...}}) */
         [v-cloak] { display: none; }
 
         body { 
@@ -104,7 +103,7 @@
     <div class="header">
         <h1>🏆 宜慶地政人氣王</h1>
         <div class="subtitle">
-            謝謝大家這一年來的支持！歡迎投下喜歡的代書，為他們在 <strong>✨ 感恩餐會 ✨</strong> 爭取最高榮耀！
+            謝謝大家這一年來的支持！歡迎投下喜歡的團隊，為他們在 <strong>✨ 感恩餐會 ✨</strong> 爭取最高榮耀！
         </div>
     </div>
 
@@ -133,13 +132,13 @@
             
             <template v-if="!isExpired">
                 <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">
-                    👍 請支持我！投我一票
+                    👍 請支持我們！投一票
                 </button>
                 <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">
                     🎉 感謝您的支持！
                 </button>
                 <button v-else class="vote-btn btn-unvoted">
-                    嗚嗚嗚 😭
+                    加油加油 😭
                 </button>
             </template>
             <button v-else class="vote-btn" style="background: #f1f5f9; color: #cbd5e1; cursor: not-allowed;">
@@ -167,20 +166,26 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    // 修改資料庫節點名稱，達成自動歸零
-    const votesRef = db.ref('yiqing_OFFICIAL_2026');
+    // 使用正式版資料夾
+    const votesRef = db.ref('yiqing_FINAL_VOTES_2026');
 
     const { createApp } = Vue;
     createApp({
         data() {
             return {
-                // 修改 localStorage 名稱，達成自動清除測試紀錄
-                hasVoted: !!localStorage.getItem('voted_OFFICIAL_2026'),
-                votedTarget: localStorage.getItem('voted_target_OFFICIAL'),
+                // 使用正式版標記
+                hasVoted: !!localStorage.getItem('voted_FINAL_2026'),
+                votedTarget: localStorage.getItem('voted_target_FINAL'),
                 playersData: {
-                    '永康所 ✦ 子琳所長': 0, '華平所 ✦ 瑜萍所長': 0, '安平所 ✦ 秀如所長': 0,
-                    '善化所 ✦ 杏敏所長': 0, '橋頭所 ✦ 惠婷所長': 0, '總所 ✦ 煒澂組': 0,
-                    '總所 ✦ 佩婷組': 0, '嘉義所 ✦ 美伶所長': 0, '建設部': 0
+                    '永康所 ✦ 子琳所長': 0, 
+                    '華平所 ✦ 瑜萍所長': 0, 
+                    '安平所 ✦ 秀如所長': 0,
+                    '善化所 ✦ 杏敏所長': 0, 
+                    '橋頭所 ✦ 惠婷所長': 0, 
+                    '嘉義所 ✦ 美伶所長': 0,
+                    '總所 ✦ 煒澂組': 0,
+                    '總所 ✦ 佩婷組': 0, 
+                    '建設部': 0
                 },
                 endTime: new Date("2026-03-06T12:00:00").getTime(),
                 countdownText: "",
@@ -224,8 +229,8 @@
                 votesRef.child(name).transaction(v => (v || 0) + 1);
                 this.hasVoted = true;
                 this.votedTarget = name;
-                localStorage.setItem('voted_OFFICIAL_2026', 'true');
-                localStorage.setItem('voted_target_OFFICIAL', name);
+                localStorage.setItem('voted_FINAL_2026', 'true');
+                localStorage.setItem('voted_target_FINAL', name);
             },
             launchConfetti() {
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#215440', '#d4af37', '#ffffff'] });
