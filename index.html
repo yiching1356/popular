@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>🏆 宜慶地政人氣王爭霸戰</title>
+    <meta name="description" content="宜慶地政 2026 感恩餐會人氣王投票活動，快來為你支持的所長與組別投下神聖的一票！">
+    
     <meta property="og:title" content="🏆 宜慶地政人氣王爭霸戰">
-    <meta property="og:description" content="謝謝大家支持！歡迎投下喜歡的代書，爭取感恩餐會最高榮耀！">
+    <meta property="og:description" content="宜慶地政 2026 感恩餐會人氣王投票活動。活動截止至 3/6 中午 12:00，快來參與！">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://yiching1356.github.io/popular/">
+    <meta property="og:site_name" content="宜慶地政">
+    <meta property="og:locale" content="zh_TW">
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
@@ -22,6 +26,9 @@
             --yiqing-gold: #d4af37;
             --glass-bg: rgba(255, 255, 255, 0.95);
         }
+
+        /* 避免 Vue 渲染前的閃爍 (防止顯示 {{...}}) */
+        [v-cloak] { display: none; }
 
         body { 
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; 
@@ -98,7 +105,7 @@
 </head>
 <body>
 
-<div id="app" class="vote-card">
+<div id="app" class="vote-card" v-cloak>
     <div class="header">
         <h1>🏆 宜慶地政人氣王</h1>
         <div class="subtitle">
