@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>人氣王即時投票站</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 50px; }
+        .container { width: 100%; max-width: 500px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        
+        .candidate-card { margin-bottom: 20px; }
+        .info { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; }
+        
+        /* 進度條外框 */
+        .progress-bar-bg {
+            background: #eee;
+            border-radius: 20px;
+            height: 25px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* 進度條本體 */
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            color: white;
+            font-size: 12px;
+            padding-right: 10px;
+        }
+
+        .leader { background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%) !important; }
+        
+        button {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background: #555; }
+        button:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+<div id="app" class="container">
+    <h2>🏆 人氣王即時戰況</h2>
+    
+    <div v-for="player in sortedPlayers" :key="player.id" class="candidate-card">
+        <div class="info">
+            <span>{{ player.name }} <span v-if="isLeader(player.votes)">🔥 領先中</span></span>
+            <span>{{ player.votes }} 票</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-fill" 
+                 :class="{ leader: isLeader(player.votes) }"
+                 :style="{ width: getPercentage(player.votes) + '%' }">
+                {{ getPercentage(player.votes) }}%
+            </div>
+        </div>
+        <button @click="vote(player.id)">投給 {{ player.name }}</button>
+    </div>
+
+    <hr>
+    <p style="text-align: center; color: #888;">總票數：{{ totalVotes }}</p>
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                players: [
+                    { id: 1, name: '選手 A', votes: 10 },
+                    { id: 2, name: '選手 B', votes: 12 },
+                    { id: 3, name: '選手 C', votes: 8 }
+                ]
+            }
+        },
+        computed: {
+            totalVotes() {
+                return this.players.reduce((sum, p) => sum + p.votes, 0);
+            },
+            sortedPlayers() {
+                // 如果你想讓名次隨時跳動，可以解開註釋
+                // return [...this.players].sort((a, b) => b.votes - a.votes);
+                return this.players;
+            },
+            maxVote() {
+                return Math.max(...this.players.map(p => p.votes));
+            }
+        },
+        methods: {
+            vote(id) {
+                const p = this.players.find(p => p.id === id);
+                if (p) p.votes++;
+            },
+            getPercentage(votes) {
+                if (this.totalVotes === 0) return 0;
+                return ((votes / this.totalVotes) * 100).toFixed(1);
+            },
+            isLeader(votes) {
+                return votes === this.maxVote && votes > 0;
+            }
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
