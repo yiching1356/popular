@@ -12,49 +12,89 @@
     <style>
         :root {
             --yiqing-main: #215440;
-            --yiqing-gold: #c6a300;
+            --yiqing-light: #2d6a53;
+            --yiqing-gold: #d4af37;
+            --glass-bg: rgba(255, 255, 255, 0.9);
         }
 
-        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background: #f8fafc; margin: 0; padding: 20px; color: #334155; }
-        .vote-card { width: 100%; max-width: 550px; margin: 0 auto; background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); border-top: 10px solid var(--yiqing-main); }
-        
-        .header { text-align: center; margin-bottom: 20px; }
-        h1 { color: var(--yiqing-main); font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 1px; }
-        .subtitle { font-size: 15px; color: #4b5563; margin-top: 15px; line-height: 1.6; background: #f1f5f9; padding: 15px; border-radius: 15px; }
+        body { 
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; 
+            background: radial-gradient(circle at top right, #f0f4f2 0%, #d9e2dd 100%);
+            margin: 0; padding: 20px; color: #2c3e50;
+            min-height: 100vh;
+        }
+
+        .vote-card { 
+            width: 100%; max-width: 500px; margin: 0 auto; 
+            background: var(--glass-bg); backdrop-filter: blur(10px);
+            padding: 35px 25px; border-radius: 40px; 
+            box-shadow: 0 20px 60px rgba(33, 84, 64, 0.1);
+            border: 1px solid rgba(255,255,255,0.5);
+            position: relative; overflow: hidden;
+        }
+
+        /* 裝飾性背景圓圈 */
+        .vote-card::before {
+            content: ""; position: absolute; top: -50px; right: -50px;
+            width: 150px; height: 150px; background: var(--yiqing-main);
+            opacity: 0.05; border-radius: 50%; z-index: 0;
+        }
+
+        .header { position: relative; z-index: 1; text-align: center; margin-bottom: 30px; }
+        h1 { color: var(--yiqing-main); font-size: 30px; font-weight: 900; margin: 0; letter-spacing: 2px; }
+        .subtitle { 
+            font-size: 14px; color: #5d7069; margin-top: 15px; line-height: 1.8;
+            border-left: 3px solid var(--yiqing-gold); padding-left: 15px; display: inline-block; text-align: left;
+        }
 
         .countdown-container { 
-            background: #fffdf5; border: 1px dashed var(--yiqing-gold); 
-            padding: 12px; border-radius: 12px; text-align: center; margin: 20px 0; 
+            background: var(--yiqing-main); color: white; padding: 15px; border-radius: 20px;
+            text-align: center; margin: 25px 0; box-shadow: 0 10px 20px rgba(33, 84, 64, 0.2);
         }
-        .countdown-label { font-size: 13px; color: var(--yiqing-main); font-weight: bold; margin-bottom: 4px; }
-        .timer { font-family: 'Courier New', monospace; font-size: 22px; font-weight: 900; color: #b45309; }
+        .timer { font-family: 'Inter', monospace; font-size: 24px; font-weight: 800; color: #ffca28; }
 
-        .list-move { transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        .list-move { transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .candidate-item { background: #fff; border: 1px solid #e2e8f0; padding: 18px; border-radius: 20px; margin-bottom: 12px; position: relative; transition: 0.3s; }
-        .is-leading { border: 2px solid var(--yiqing-gold); background: #fdfdf2; box-shadow: 0 5px 15px rgba(198, 163, 0, 0.1); }
+        .candidate-item { 
+            background: white; border: 1px solid #edf2f0; padding: 20px; border-radius: 24px; 
+            margin-bottom: 15px; transition: 0.4s; position: relative;
+        }
+        .is-leading { border: 1px solid var(--yiqing-gold); box-shadow: 0 10px 25px rgba(212, 175, 55, 0.15); }
 
-        .motivational-tag { font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
-        .tag-gold { background: var(--yiqing-gold); color: white; }
-        .tag-silver { background: #e2e8f0; color: #475569; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .motivational-tag { 
+            font-size: 11px; font-weight: bold; padding: 3px 12px; border-radius: 50px; 
+            margin-bottom: 10px; display: inline-block; letter-spacing: 1px;
+        }
+        .tag-gold { background: linear-gradient(135deg, #d4af37, #f1d37e); color: #544415; }
+        .tag-silver { background: #f1f5f9; color: #64748b; }
 
         .info-row { display: flex; justify-content: space-between; align-items: center; }
-        .name { font-weight: bold; font-size: 18px; color: var(--yiqing-main); }
-        .vote-stats { font-weight: 900; color: var(--yiqing-main); font-size: 20px; }
+        .name { font-weight: 800; font-size: 18px; color: var(--yiqing-main); }
+        .vote-stats { font-weight: 900; color: #1a1a1a; font-size: 22px; }
 
-        .progress-track { height: 10px; background: #f1f5f9; border-radius: 5px; overflow: hidden; margin: 12px 0; }
-        .progress-fill { height: 100%; background: var(--yiqing-main); transition: width 1s ease; opacity: 0.4; }
-        .leader-fill { background: var(--yiqing-gold); opacity: 1; }
+        .progress-track { height: 8px; background: #f0f4f2; border-radius: 10px; overflow: hidden; margin: 15px 0; }
+        .progress-fill { 
+            height: 100%; background: var(--yiqing-main); transition: width 1.2s cubic-bezier(0.1, 0.7, 1.0, 0.1); 
+            position: relative;
+        }
+        .progress-fill::after {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shine 2s infinite;
+        }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-        .vote-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .vote-btn { 
+            width: 100%; padding: 15px; border: none; border-radius: 15px; 
+            font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 15px;
+            letter-spacing: 1px; box-shadow: 0 4px 15px rgba(33, 84, 64, 0.1);
+        }
         .btn-ready { background: var(--yiqing-main); color: white; }
-        .btn-ready:hover { opacity: 0.9; transform: translateY(-2px); }
-        .btn-voted-target { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .btn-unvoted { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
-        .btn-expired { background: #cbd5e1; color: white; cursor: not-allowed; }
+        .btn-ready:hover { background: var(--yiqing-light); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(33, 84, 64, 0.2); }
+        .btn-voted-target { background: #e8f5e9; color: #2e7d32; }
+        .btn-unvoted { background: #fafafa; color: #b0bec5; border: 1px solid #f0f0f0; }
 
-        .footer { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 30px; }
+        .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 40px; letter-spacing: 1px; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -63,13 +103,12 @@
     <div class="header">
         <h1>🏆 宜慶地政人氣王</h1>
         <div class="subtitle">
-            謝謝大家這一年來的支持！歡迎投下喜歡的代書，<br>
-            為他們在 <strong>✨ 感恩餐會 ✨</strong> 爭取最高榮耀！
+            謝謝大家這一年來的支持！歡迎投下喜歡的代書，為他們在 <strong>✨ 感恩餐會 ✨</strong> 爭取最高榮耀！
         </div>
     </div>
 
     <div class="countdown-container">
-        <div class="countdown-label">⏳ 距離活動截止還有</div>
+        <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px; font-weight: bold;">COUNTDOWN TO DEADLINE</div>
         <div class="timer">{{ countdownText }}</div>
     </div>
 
@@ -77,14 +116,14 @@
         <div v-for="(p, index) in sortedPlayers" :key="p.name" class="candidate-item" :class="{'is-leading': index === 0 && p.votes > 0}">
             
             <div v-if="p.votes > 0">
-                <span v-if="index === 0" class="motivational-tag tag-gold">🔥 目前領先！</span>
-                <span v-else-if="index === 1 || index === 2" class="motivational-tag tag-silver">⚡ 加油！快追上了！</span>
-                <span v-else class="motivational-tag" style="color:#94a3b8">📢 差你這一票！</span>
+                <span v-if="index === 0" class="motivational-tag tag-gold">👑 目前領跑第一</span>
+                <span v-else-if="index === 1 || index === 2" class="motivational-tag tag-silver">🎯 加油！距離超越不遠了</span>
+                <span v-else class="motivational-tag" style="color:#adb5bd">✨ 全力衝刺中</span>
             </div>
 
             <div class="info-row">
-                <span class="name">{{ index + 1 }}. {{ p.name }}</span>
-                <span class="vote-stats">{{ p.votes }} 票</span>
+                <span class="name">{{ p.name }}</span>
+                <span class="vote-stats">{{ p.votes }} <small style="font-size: 12px; color: #999;">票</small></span>
             </div>
             
             <div class="progress-track">
@@ -92,17 +131,24 @@
             </div>
             
             <template v-if="!isExpired">
-                <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">👍 請投我一票！支持我！</button>
-                <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">🎉 感謝您的支持！</button>
-                <button v-else class="vote-btn btn-unvoted">嗚嗚嗚 😭</button>
+                <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">
+                    VOTE NOW
+                </button>
+                <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">
+                    🎉 感謝您的支持
+                </button>
+                <button v-else class="vote-btn btn-unvoted">
+                    下次再投我嘛 😭
+                </button>
             </template>
-            <button v-else class="vote-btn btn-expired">活動已圓滿結束</button>
+            <button v-else class="vote-btn" style="background: #eee; color: #999; cursor: not-allowed;">
+                VOTING CLOSED
+            </button>
         </div>
     </transition-group>
 
     <div class="footer">
-        宜慶地政 2026 感恩餐會系列活動<br>
-        目前全體累積收票：{{ totalVotes }}
+        © 2026 YIQING LAND ADMINISTRATION | TOTAL VOTES: {{ totalVotes }}
     </div>
 </div>
 
@@ -145,8 +191,6 @@
             });
             this.updateTimer();
             setInterval(this.updateTimer, 1000);
-            
-            // 如果進來時已經投過票，不自動噴發（只在點擊瞬間噴發）
         },
         computed: {
             sortedPlayers() {
@@ -161,7 +205,7 @@
                 const now = new Date().getTime();
                 const diff = this.endTime - now;
                 if (diff <= 0) {
-                    this.countdownText = "投票已結束";
+                    this.countdownText = "VOTING CLOSED";
                     this.isExpired = true;
                     return;
                 }
@@ -169,14 +213,11 @@
                 const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((diff % (1000 * 60)) / 1000);
-                this.countdownText = `${d}天 ${h}時 ${m}分 ${s}秒`;
+                this.countdownText = `${d}D ${h}H ${m}M ${s}S`;
             },
             handleVote(name) {
                 if (this.hasVoted || this.isExpired) return;
-                
-                // 啟動彩帶噴發動畫
                 this.launchConfetti();
-
                 votesRef.child(name).transaction(v => (v || 0) + 1);
                 this.hasVoted = true;
                 this.votedTarget = name;
@@ -184,27 +225,10 @@
                 localStorage.setItem('voted_target_name', name);
             },
             launchConfetti() {
-                const duration = 3 * 1000;
-                const animationEnd = Date.now() + duration;
-                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-                function randomInRange(min, max) {
-                    return Math.random() * (max - min) + min;
-                }
-
-                const interval = setInterval(function() {
-                    const timeLeft = animationEnd - Date.now();
-                    if (timeLeft <= 0) return clearInterval(interval);
-
-                    const particleCount = 50 * (timeLeft / duration);
-                    // 兩邊對噴煙火感
-                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-                }, 250);
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#215440', '#d4af37', '#ffffff'] });
             }
         }
     }).mount('#app');
 </script>
 </body>
-</html>
 </html>
