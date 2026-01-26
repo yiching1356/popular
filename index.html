@@ -7,46 +7,49 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            --leader-gradient: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
-            --bg-color: #f8fafc;
+            --yiqing-blue: #1e3a8a;
+            --yiqing-gold: #f59e0b;
+            --bg-soft: #f1f5f9;
         }
 
-        body { font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        body { font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif; background: var(--bg-soft); margin: 0; padding: 20px; display: flex; justify-content: center; }
         
-        .vote-card { width: 100%; max-width: 550px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .vote-card { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
-        h1 { color: #1e3a8a; margin: 0; font-size: 26px; letter-spacing: 2px; }
-        .subtitle { color: #64748b; font-size: 14px; margin-top: 8px; }
+        .header { text-align: center; margin-bottom: 25px; }
+        h1 { color: var(--yiqing-blue); margin: 0; font-size: 28px; letter-spacing: 1px; }
+        .divider { height: 4px; width: 60px; background: var(--yiqing-gold); margin: 15px auto; border-radius: 2px; }
 
-        .candidate-list { display: flex; flex-direction: column; gap: 18px; }
-        .candidate-item { background: #fff; border: 1px solid #f1f5f9; padding: 15px; border-radius: 12px; transition: 0.3s; }
-        .candidate-item.is-leading { border-color: #fbbf24; background: #fffdf5; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.1); }
+        .candidate-list { display: flex; flex-direction: column; gap: 15px; }
+        .candidate-item { 
+            background: #fff; border: 2px solid #e2e8f0; padding: 16px; border-radius: 16px; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        
+        .candidate-item.is-leading { border-color: var(--yiqing-gold); background: #fffcf0; transform: scale(1.02); }
 
-        .candidate-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .name { font-weight: bold; font-size: 17px; color: #334155; display: flex; align-items: center; }
-        .vote-stats { text-align: right; }
-        .vote-count { font-weight: 800; color: #1e3a8a; font-size: 18px; }
-        .percent { font-size: 12px; color: #94a3b8; margin-left: 5px; }
+        .candidate-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .name { font-weight: bold; font-size: 18px; color: #1e293b; display: flex; align-items: center; }
+        .vote-stats { text-align: right; font-weight: 800; color: var(--yiqing-blue); }
 
-        /* 進度條 */
-        .progress-bg { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
+        /* 進度條槽 */
+        .progress-track { height: 14px; background: #f1f5f9; border-radius: 7px; overflow: hidden; margin-bottom: 12px; }
         .progress-fill { 
-            height: 100%; width: 0%; background: #94a3b8; border-radius: 5px; 
-            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            height: 100%; width: 0%; background: #94a3b8; border-radius: 7px; 
+            transition: width 1.2s ease-out; 
         }
-        .leader-fill { background: var(--leader-gradient); }
+        .leader-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
         
         .vote-btn {
-            width: 100%; padding: 10px; margin-top: 12px; border: none; border-radius: 8px;
-            background: #1e3a8a; color: white; font-weight: bold; cursor: pointer; transition: 0.2s;
+            width: 100%; padding: 12px; border: none; border-radius: 10px;
+            background: var(--yiqing-blue); color: white; font-weight: bold; font-size: 16px;
+            cursor: pointer; transition: 0.3s;
         }
-        .vote-btn:hover:not(:disabled) { background: #1e40af; transform: translateY(-1px); }
+        .vote-btn:hover:not(:disabled) { background: #1e40af; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2); }
         .vote-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
 
-        .footer-info { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
-        .voted-alert { color: #ef4444; font-weight: bold; background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; }
+        .footer { text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
+        .alert-box { color: #b91c1c; background: #fee2e2; padding: 12px; border-radius: 10px; font-weight: bold; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -54,22 +57,23 @@
 <div id="app" class="vote-card">
     <div class="header">
         <h1>🏆 宜慶地政人氣王</h1>
-        <div class="subtitle">即時戰況統計</div>
+        <div class="divider"></div>
+        <p style="color: #64748b;">支持你心目中的優秀單位！</p>
     </div>
 
     <div class="candidate-list">
         <div v-for="p in players" :key="p.id" class="candidate-item" :class="{'is-leading': isLeader(p.votes)}">
             <div class="candidate-info">
                 <span class="name">
-                    <span v-if="isLeader(p.votes)" style="margin-right: 5px;">👑</span>
+                    <span v-if="isLeader(p.votes)" style="margin-right: 8px;">👑</span>
                     {{ p.name }}
                 </span>
                 <div class="vote-stats">
-                    <span class="vote-count">{{ p.votes }}</span> <small>票</small>
-                    <span class="percent">({{ getPercent(p.votes) }}%)</span>
+                    <span>{{ p.votes }} 票</span>
+                    <small style="color:#94a3b8; margin-left:8px;">{{ getPercent(p.votes) }}%</small>
                 </div>
             </div>
-            <div class="progress-bg">
+            <div class="progress-track">
                 <div class="progress-fill" 
                      :class="{'leader-fill': isLeader(p.votes)}"
                      :style="{ width: getPercent(p.votes) + '%' }">
@@ -81,11 +85,13 @@
         </div>
     </div>
 
-    <div class="footer-info">
-        <div v-if="hasVoted" class="voted-alert">
-            您今日已投過票，每人限投一票。
+    <div class="footer">
+        <div v-if="hasVoted" class="alert-box">
+            您今日已完成投票，感謝您的參與！
         </div>
-        <p style="color: #94a3b8; font-size: 12px;">總計收票數：{{ totalVotes }}</p>
+        <div style="font-size: 14px; color: #94a3b8;">
+            總票數：<strong style="color: #475569;">{{ totalVotes }}</strong>
+        </div>
     </div>
 </div>
 
@@ -97,26 +103,26 @@
             return {
                 hasVoted: false,
                 players: [
-                    { id: 1, name: '華平所', votes: 0 },
-                    { id: 2, name: '安平所', votes: 0 },
+                    { id: 1, name: '華平所 ✦ 瑜萍所長', votes: 0 },
+                    { id: 2, name: '安平所 ✦ 秀如所長', votes: 0 },
                     { id: 3, name: '建設部', votes: 0 },
-                    { id: 4, name: '煒澂組(K01)', votes: 0 },
-                    { id: 5, name: '佩婷組(P01)', votes: 0 },
-                    { id: 6, name: '永康所', votes: 0 },
-                    { id: 7, name: '橋頭所', votes: 0 },
-                    { id: 8, name: '善化所', votes: 0 },
-                    { id: 9, name: '嘉義所', votes: 0 }
+                    { id: 4, name: '總所 ✦ 煒澂組(K01)', votes: 0 },
+                    { id: 5, name: '總所 ✦ 佩婷組(P01)', votes: 0 },
+                    { id: 6, name: '永康所 ✦ 子琳所長', votes: 0 },
+                    { id: 7, name: '橋頭所 ✦ 惠婷所長', votes: 0 },
+                    { id: 8, name: '善化所 ✦ 杏敏所長', votes: 0 },
+                    { id: 9, name: '嘉義所 ✦ 美伶所長', votes: 0 }
                 ]
             }
         },
         mounted() {
-            if (localStorage.getItem('yiqing_voted')) {
+            if (localStorage.getItem('yiqing_voted_status')) {
                 this.hasVoted = true;
             }
-            // 讀取本地票數紀錄
-            const savedVotes = localStorage.getItem('yiqing_votes_data');
-            if (savedVotes) {
-                this.players = JSON.parse(savedVotes);
+            // 讀取本地模擬票數
+            const savedData = localStorage.getItem('yiqing_live_data');
+            if (savedData) {
+                this.players = JSON.parse(savedData);
             }
         },
         computed: {
@@ -138,14 +144,12 @@
             },
             handleVote(id) {
                 if (this.hasVoted) return;
-
                 const target = this.players.find(p => p.id === id);
                 if (target) {
                     target.votes++;
                     this.hasVoted = true;
-                    // 儲存狀態
-                    localStorage.setItem('yiqing_voted', 'true');
-                    localStorage.setItem('yiqing_votes_data', JSON.stringify(this.players));
+                    localStorage.setItem('yiqing_voted_status', 'true');
+                    localStorage.setItem('yiqing_live_data', JSON.stringify(this.players));
                 }
             }
         }
