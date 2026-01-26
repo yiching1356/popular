@@ -14,7 +14,7 @@
             --yiqing-main: #215440;
             --yiqing-light: #2d6a53;
             --yiqing-gold: #d4af37;
-            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-bg: rgba(255, 255, 255, 0.95);
         }
 
         body { 
@@ -30,28 +30,23 @@
             padding: 35px 25px; border-radius: 40px; 
             box-shadow: 0 20px 60px rgba(33, 84, 64, 0.1);
             border: 1px solid rgba(255,255,255,0.5);
-            position: relative; overflow: hidden;
+            position: relative;
         }
 
-        /* 裝飾性背景圓圈 */
-        .vote-card::before {
-            content: ""; position: absolute; top: -50px; right: -50px;
-            width: 150px; height: 150px; background: var(--yiqing-main);
-            opacity: 0.05; border-radius: 50%; z-index: 0;
-        }
-
-        .header { position: relative; z-index: 1; text-align: center; margin-bottom: 30px; }
-        h1 { color: var(--yiqing-main); font-size: 30px; font-weight: 900; margin: 0; letter-spacing: 2px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        h1 { color: var(--yiqing-main); font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 1px; }
         .subtitle { 
             font-size: 14px; color: #5d7069; margin-top: 15px; line-height: 1.8;
             border-left: 3px solid var(--yiqing-gold); padding-left: 15px; display: inline-block; text-align: left;
         }
 
+        /* 倒數計時區樣式 */
         .countdown-container { 
             background: var(--yiqing-main); color: white; padding: 15px; border-radius: 20px;
             text-align: center; margin: 25px 0; box-shadow: 0 10px 20px rgba(33, 84, 64, 0.2);
         }
-        .timer { font-family: 'Inter', monospace; font-size: 24px; font-weight: 800; color: #ffca28; }
+        .countdown-label { font-size: 13px; opacity: 0.9; margin-bottom: 5px; font-weight: bold; letter-spacing: 1px; }
+        .timer { font-family: 'Inter', monospace; font-size: 22px; font-weight: 800; color: #ffca28; }
 
         .list-move { transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
 
@@ -59,24 +54,25 @@
             background: white; border: 1px solid #edf2f0; padding: 20px; border-radius: 24px; 
             margin-bottom: 15px; transition: 0.4s; position: relative;
         }
-        .is-leading { border: 1px solid var(--yiqing-gold); box-shadow: 0 10px 25px rgba(212, 175, 55, 0.15); }
+        .is-leading { border: 1px solid var(--yiqing-gold); box-shadow: 0 10px 25px rgba(212, 175, 55, 0.1); }
 
         .motivational-tag { 
             font-size: 11px; font-weight: bold; padding: 3px 12px; border-radius: 50px; 
-            margin-bottom: 10px; display: inline-block; letter-spacing: 1px;
+            margin-bottom: 10px; display: inline-block;
         }
         .tag-gold { background: linear-gradient(135deg, #d4af37, #f1d37e); color: #544415; }
         .tag-silver { background: #f1f5f9; color: #64748b; }
 
         .info-row { display: flex; justify-content: space-between; align-items: center; }
-        .name { font-weight: 800; font-size: 18px; color: var(--yiqing-main); }
-        .vote-stats { font-weight: 900; color: #1a1a1a; font-size: 22px; }
+        .name { font-weight: 800; font-size: 17px; color: var(--yiqing-main); }
+        .vote-stats { font-weight: 900; color: #1a1a1a; font-size: 20px; }
 
         .progress-track { height: 8px; background: #f0f4f2; border-radius: 10px; overflow: hidden; margin: 15px 0; }
         .progress-fill { 
             height: 100%; background: var(--yiqing-main); transition: width 1.2s cubic-bezier(0.1, 0.7, 1.0, 0.1); 
             position: relative;
         }
+        /* 流光動畫 */
         .progress-fill::after {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
@@ -85,16 +81,15 @@
         @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
         .vote-btn { 
-            width: 100%; padding: 15px; border: none; border-radius: 15px; 
+            width: 100%; padding: 14px; border: none; border-radius: 15px; 
             font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 15px;
-            letter-spacing: 1px; box-shadow: 0 4px 15px rgba(33, 84, 64, 0.1);
         }
-        .btn-ready { background: var(--yiqing-main); color: white; }
-        .btn-ready:hover { background: var(--yiqing-light); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(33, 84, 64, 0.2); }
-        .btn-voted-target { background: #e8f5e9; color: #2e7d32; }
-        .btn-unvoted { background: #fafafa; color: #b0bec5; border: 1px solid #f0f0f0; }
+        .btn-ready { background: var(--yiqing-main); color: white; box-shadow: 0 4px 15px rgba(33, 84, 64, 0.1); }
+        .btn-ready:hover { background: var(--yiqing-light); transform: translateY(-2px); }
+        .btn-voted-target { background: #e8f5e9; color: #2e7d32; cursor: default; }
+        .btn-unvoted { background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; cursor: default; }
 
-        .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 40px; letter-spacing: 1px; text-transform: uppercase; }
+        .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 35px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -108,7 +103,7 @@
     </div>
 
     <div class="countdown-container">
-        <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px; font-weight: bold;">COUNTDOWN TO DEADLINE</div>
+        <div class="countdown-label">投票截止倒數</div>
         <div class="timer">{{ countdownText }}</div>
     </div>
 
@@ -116,14 +111,14 @@
         <div v-for="(p, index) in sortedPlayers" :key="p.name" class="candidate-item" :class="{'is-leading': index === 0 && p.votes > 0}">
             
             <div v-if="p.votes > 0">
-                <span v-if="index === 0" class="motivational-tag tag-gold">👑 目前領跑第一</span>
+                <span v-if="index === 0" class="motivational-tag tag-gold">👑 目前領先第一</span>
                 <span v-else-if="index === 1 || index === 2" class="motivational-tag tag-silver">🎯 加油！距離超越不遠了</span>
                 <span v-else class="motivational-tag" style="color:#adb5bd">✨ 全力衝刺中</span>
             </div>
 
             <div class="info-row">
                 <span class="name">{{ p.name }}</span>
-                <span class="vote-stats">{{ p.votes }} <small style="font-size: 12px; color: #999;">票</small></span>
+                <span class="vote-stats">{{ p.votes }} <small style="font-size: 12px;">票</small></span>
             </div>
             
             <div class="progress-track">
@@ -132,23 +127,23 @@
             
             <template v-if="!isExpired">
                 <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">
-                    VOTE NOW
+                    👍 請支持我！投我一票
                 </button>
                 <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">
-                    🎉 感謝您的支持
+                    🎉 感謝您的支持！
                 </button>
                 <button v-else class="vote-btn btn-unvoted">
-                    下次再投我嘛 😭
+                    嗚嗚嗚 😭
                 </button>
             </template>
-            <button v-else class="vote-btn" style="background: #eee; color: #999; cursor: not-allowed;">
-                VOTING CLOSED
+            <button v-else class="vote-btn" style="background: #f1f5f9; color: #cbd5e1; cursor: not-allowed;">
+                活動已截止
             </button>
         </div>
     </transition-group>
 
     <div class="footer">
-        © 2026 YIQING LAND ADMINISTRATION | TOTAL VOTES: {{ totalVotes }}
+        © 2026 YIQING LAND ADMINISTRATION | 目前總票數：{{ totalVotes }}
     </div>
 </div>
 
@@ -205,7 +200,7 @@
                 const now = new Date().getTime();
                 const diff = this.endTime - now;
                 if (diff <= 0) {
-                    this.countdownText = "VOTING CLOSED";
+                    this.countdownText = "投票已結束";
                     this.isExpired = true;
                     return;
                 }
@@ -213,7 +208,7 @@
                 const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((diff % (1000 * 60)) / 1000);
-                this.countdownText = `${d}D ${h}H ${m}M ${s}S`;
+                this.countdownText = `${d}天 ${h}時 ${m}分 ${s}秒`;
             },
             handleVote(name) {
                 if (this.hasVoted || this.isExpired) return;
@@ -225,10 +220,13 @@
                 localStorage.setItem('voted_target_name', name);
             },
             launchConfetti() {
+                // 發射噴發彩帶動畫
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#215440', '#d4af37', '#ffffff'] });
             }
         }
     }).mount('#app');
 </script>
+</body>
+</html>
 </body>
 </html>
