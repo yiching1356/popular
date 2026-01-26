@@ -3,17 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>🏆 宜慶地政人氣王爭霸戰</title>
-    <meta name="description" content="宜慶地政 2026 感恩餐會人氣王投票活動，快來為你支持的所長與組別投下神聖的一票！">
-    
-    <meta property="og:title" content="🏆 宜慶地政人氣王爭霸戰">
-    <meta property="og:description" content="宜慶地政 2026 感恩餐會人氣王投票活動。活動截止至 3/6 中午 12:00，快來參與！">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://yiching1356.github.io/popular/">
-    <meta property="og:site_name" content="宜慶地政">
-    <meta property="og:locale" content="zh_TW">
-
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
@@ -26,9 +16,6 @@
             --yiqing-gold: #d4af37;
             --glass-bg: rgba(255, 255, 255, 0.95);
         }
-
-        /* 避免 Vue 渲染前的閃爍 (防止顯示 {{...}}) */
-        [v-cloak] { display: none; }
 
         body { 
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; 
@@ -53,6 +40,7 @@
             border-left: 3px solid var(--yiqing-gold); padding-left: 15px; display: inline-block; text-align: left;
         }
 
+        /* 倒數計時區樣式 */
         .countdown-container { 
             background: var(--yiqing-main); color: white; padding: 15px; border-radius: 20px;
             text-align: center; margin: 25px 0; box-shadow: 0 10px 20px rgba(33, 84, 64, 0.2);
@@ -84,6 +72,7 @@
             height: 100%; background: var(--yiqing-main); transition: width 1.2s cubic-bezier(0.1, 0.7, 1.0, 0.1); 
             position: relative;
         }
+        /* 流光動畫 */
         .progress-fill::after {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
@@ -105,7 +94,7 @@
 </head>
 <body>
 
-<div id="app" class="vote-card" v-cloak>
+<div id="app" class="vote-card">
     <div class="header">
         <h1>🏆 宜慶地政人氣王</h1>
         <div class="subtitle">
@@ -231,6 +220,7 @@
                 localStorage.setItem('voted_target_name', name);
             },
             launchConfetti() {
+                // 發射噴發彩帶動畫
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#215440', '#d4af37', '#ffffff'] });
             }
         }
