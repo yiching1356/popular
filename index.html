@@ -9,75 +9,75 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <style>
         :root {
-            --yiqing-blue: #2563eb;
-            --yiqing-gold: #f59e0b;
-            --bg-color: #f8fafc;
+            --yiqing-main: #215440; /* 你指定的深綠色 */
+            --yiqing-gold: #c6a300;
+            --bg-color: #f4f7f6;
         }
 
         body { 
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; 
             background: var(--bg-color); 
-            margin: 0; padding: 20px; color: #1e293b;
+            margin: 0; padding: 20px; color: #334155;
         }
         
         .vote-card { 
             width: 100%; max-width: 550px; margin: 0 auto;
-            background: white; padding: 25px; border-radius: 30px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.05); 
+            background: white; padding: 30px; border-radius: 20px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08); 
+            border-top: 8px solid var(--yiqing-main);
         }
         
-        .header { text-align: center; margin-bottom: 20px; }
-        h1 { color: var(--yiqing-blue); font-size: 28px; font-weight: 900; margin: 0; }
-        .subtitle { color: #64748b; font-size: 14px; margin-top: 5px; font-weight: bold; }
+        .header { text-align: center; margin-bottom: 25px; }
+        h1 { color: var(--yiqing-main); font-size: 26px; font-weight: 900; margin: 0; letter-spacing: 1px; }
+        .subtitle { 
+            color: #4b5563; font-size: 15px; margin-top: 12px; 
+            line-height: 1.6; font-weight: 500;
+            background: #f1f5f9; padding: 15px; border-radius: 12px;
+        }
 
-        /* 列表位移動畫：排名跳動的核心 */
+        /* 排名變動平滑動畫 */
         .list-move { transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
 
         .candidate-item { 
-            background: #ffffff; border: 2px solid #f1f5f9; padding: 18px; 
-            border-radius: 20px; margin-bottom: 15px;
+            background: #ffffff; border: 1px solid #e2e8f0; padding: 18px; 
+            border-radius: 15px; margin-bottom: 12px;
             transition: all 0.3s ease; position: relative;
         }
         
-        /* 領先者外框發光 */
+        /* 領先者特效 */
         .is-leading { 
             border: 2px solid var(--yiqing-gold); 
-            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.15);
-            background: #fffdf5;
+            background: #fdfdf2;
+            transform: scale(1.02);
         }
 
-        .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .name { font-weight: bold; font-size: 17px; color: #334155; }
-        .vote-stats { font-weight: 900; color: var(--yiqing-blue); font-size: 20px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .name { font-weight: bold; font-size: 18px; color: var(--yiqing-main); }
+        .vote-stats { font-weight: 900; color: var(--yiqing-gold); font-size: 22px; }
 
-        .progress-track { height: 12px; background: #f1f5f9; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+        .progress-track { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin-bottom: 15px; }
         .progress-fill { 
-            height: 100%; width: 0%; background: #cbd5e1; border-radius: 6px; 
-            transition: width 1s cubic-bezier(0.1, 0.7, 1.0, 0.1); 
+            height: 100%; width: 0%; background: var(--yiqing-main); opacity: 0.6;
+            transition: width 1s ease-in-out; 
         }
         .leader-fill { 
-            background: linear-gradient(90deg, #f59e0b, #fbbf24); 
-            box-shadow: 0 0 10px rgba(245,158,11,0.2);
+            background: var(--yiqing-gold); opacity: 1;
+            box-shadow: 0 0 8px rgba(198, 163, 0, 0.4);
         }
 
         /* 按鈕樣式 */
         .vote-btn { 
-            width: 100%; padding: 12px; border: none; border-radius: 12px;
-            font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.2s;
-            display: flex; justify-content: center; align-items: center; gap: 8px;
+            width: 100%; padding: 12px; border: none; border-radius: 10px;
+            font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s;
         }
         
-        /* 尚未投票的樣式 */
-        .btn-ready { background: #eff6ff; color: var(--yiqing-blue); border: 1px solid #dbeafe; }
-        .btn-ready:hover { background: var(--yiqing-blue); color: white; transform: scale(1.02); }
+        .btn-ready { background: var(--yiqing-main); color: white; }
+        .btn-ready:hover { opacity: 0.9; transform: translateY(-2px); }
 
-        /* 投給他後的樣式 */
         .btn-voted-target { background: #dcfce7; color: #166534; cursor: default; }
-        
-        /* 沒被選中的樣式 */
-        .btn-unvoted { background: #f1f5f9; color: #94a3b8; cursor: default; }
+        .btn-unvoted { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; cursor: default; }
 
-        .total-info { text-align: center; font-size: 13px; color: #94a3b8; margin-top: 20px; }
+        .footer { text-align: center; font-size: 13px; color: #94a3b8; margin-top: 25px; }
     </style>
 </head>
 <body>
@@ -85,7 +85,11 @@
 <div id="app" class="vote-card">
     <div class="header">
         <h1>🏆 宜慶地政人氣王</h1>
-        <div class="subtitle">實時數據連線中</div>
+        <div class="subtitle">
+            謝謝大家這一年來的支持！<br>
+            歡迎投下喜歡的代書，為他們在<br>
+            <strong>✨ 感恩餐會 ✨</strong> 爭取最高榮耀！
+        </div>
     </div>
 
     <transition-group name="list" tag="div" class="candidate-list">
@@ -94,17 +98,17 @@
                 <span class="name">
                     <span v-if="isLeader(p.votes)">🥇 </span>{{ p.name }}
                 </span>
-                <span class="vote-stats">{{ p.votes }} <small style="font-size: 12px;">票</small></span>
+                <span class="vote-stats">{{ p.votes }} <small style="font-size: 12px; color:#94a3b8;">票</small></span>
             </div>
             <div class="progress-track">
                 <div class="progress-fill" :class="{'leader-fill': isLeader(p.votes)}" :style="{ width: getPercent(p.votes) + '%' }"></div>
             </div>
             
             <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">
-                ✨ 請投我一票，支持我！
+                👍 請支持我，投我一票！
             </button>
             <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">
-                💖 感謝支持！
+                💖 感謝您的支持！
             </button>
             <button v-else class="vote-btn btn-unvoted">
                 嗚嗚嗚 😭
@@ -112,13 +116,12 @@
         </div>
     </transition-group>
 
-    <div class="total-info">
-        目前全體累積已收票：{{ totalVotes }} 票
+    <div class="footer">
+        實時雲端同步中 | 目前總票數：{{ totalVotes }}
     </div>
 </div>
 
 <script>
-    // Firebase 配置 (已套用你的金鑰)
     const firebaseConfig = {
         apiKey: "AIzaSyBof1GHVYDUHqcsNQWW7grVNNxT_mt8sqA",
         authDomain: "yiqing-vote.firebaseapp.com",
@@ -165,7 +168,6 @@
         },
         computed: {
             sortedPlayers() {
-                // 將對象轉為陣列並按票數排序
                 return Object.keys(this.playersData)
                     .map(name => ({ name, votes: this.playersData[name] }))
                     .sort((a, b) => b.votes - a.votes);
@@ -187,11 +189,7 @@
             },
             handleVote(name) {
                 if (this.hasVoted) return;
-
-                // 更新雲端資料庫
                 votesRef.child(name).transaction((cv) => (cv || 0) + 1);
-
-                // 儲存投票紀錄
                 this.hasVoted = true;
                 this.votedTarget = name;
                 localStorage.setItem('voted_yiqing_2026', 'true');
