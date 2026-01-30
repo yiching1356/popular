@@ -166,26 +166,18 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    // 使用正式版資料夾
     const votesRef = db.ref('yiqing_FINAL_VOTES_2026');
 
     const { createApp } = Vue;
     createApp({
         data() {
             return {
-                // 使用正式版標記
                 hasVoted: !!localStorage.getItem('voted_FINAL_2026'),
                 votedTarget: localStorage.getItem('voted_target_FINAL'),
                 playersData: {
-                    '永康所 ✦ 子琳所長': 0, 
-                    '華平所 ✦ 瑜萍所長': 0, 
-                    '安平所 ✦ 秀如所長': 0,
-                    '善化所 ✦ 杏敏所長': 0, 
-                    '橋頭所 ✦ 惠婷所長': 0, 
-                    '嘉義所 ✦ 美伶所長': 0,
-                    '總所 ✦ 煒瀓組': 0,
-                    '總所 ✦ 佩庭組': 0, 
-                    '建設部': 0
+                    '永康所 ✦ 子琳所長': 0, '華平所 ✦ 瑜萍所長': 0, '安平所 ✦ 秀如所長': 0,
+                    '善化所 ✦ 杏敏所長': 0, '橋頭所 ✦ 惠婷所長': 0, '嘉義所 ✦ 美伶所長': 0,
+                    '總所 ✦ 煒澂組': 0, '總所 ✦ 佩婷組': 0, '建設部': 0
                 },
                 endTime: new Date("2026-03-06T12:00:00").getTime(),
                 countdownText: "",
@@ -193,12 +185,12 @@
             }
         },
         mounted() {
-            votesRef.on('value', (s) => {
-                const data = s.val();
-                if (data) Object.keys(this.playersData).forEach(k => { if(data[k] !== undefined) this.playersData[k] = data[k] });
-            });
+            // 優化點：進入網頁時僅抓取一次數據，抓完立即斷開連線名額
+            this.refreshData();
             this.updateTimer();
             setInterval(this.updateTimer, 1000);
+            // 為了讓畫面看起來有在動，每 30 秒自動偷偷更新一次 (一樣是抓完就斷)
+            setInterval(this.refreshData, 30000);
         },
         computed: {
             sortedPlayers() {
@@ -208,6 +200,16 @@
             totalVotes() { return Object.values(this.playersData).reduce((a, b) => a + b, 0); }
         },
         methods: {
+            refreshData() {
+                votesRef.get().then((s) => {
+                    const data = s.val();
+                    if (data) {
+                        Object.keys(this.playersData).forEach(k => { 
+                            if(data[k] !== undefined) this.playersData[k] = data[k] 
+                        });
+                    }
+                }).catch(err => console.error("連線過於頻繁，請稍後重試"));
+            },
             getPercent(v) { return this.totalVotes === 0 ? 0 : ((v / this.totalVotes) * 100).toFixed(1); },
             updateTimer() {
                 const now = new Date().getTime();
@@ -226,7 +228,10 @@
             handleVote(name) {
                 if (this.hasVoted || this.isExpired) return;
                 this.launchConfetti();
-                votesRef.child(name).transaction(v => (v || 0) + 1);
+                // 投票動作會建立短暫連線，寫入後斷開
+                votesRef.child(name).transaction(v => (v || 0) + 1).then(() => {
+                    this.refreshData(); // 投完票更新一下數據
+                });
                 this.hasVoted = true;
                 this.votedTarget = name;
                 localStorage.setItem('voted_FINAL_2026', 'true');
