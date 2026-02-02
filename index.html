@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏆 宜慶地政人氣王爭霸戰</title>
-    <meta property="og:title" content="🏆 宜慶地政人氣王爭霸戰">
-    <meta property="og:description" content="宜慶地政 2026 感恩餐會人氣王投票活動。活動截止至 3/6 中午 12:00。">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://yiching1356.github.io/popular/">
-
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
@@ -19,7 +14,9 @@
             --yiqing-main: #215440;
             --yiqing-light: #2d6a53;
             --yiqing-gold: #d4af37;
-            --glass-bg: rgba(255, 255, 255, 0.95);
+            --rank1: #fff9c4; /* 金 */
+            --rank2: #f5f5f5; /* 銀 */
+            --rank3: #fff3e0; /* 銅 */
         }
         [v-cloak] { display: none; }
         body { 
@@ -29,42 +26,47 @@
         }
         .vote-card { 
             width: 100%; max-width: 500px; margin: 0 auto; 
-            background: var(--glass-bg); backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
             padding: 35px 25px; border-radius: 40px; 
             box-shadow: 0 20px 60px rgba(33, 84, 64, 0.1);
             border: 1px solid rgba(255,255,255,0.5);
-            position: relative;
         }
         .header { text-align: center; margin-bottom: 30px; }
         h1 { color: var(--yiqing-main); font-size: 28px; font-weight: 900; margin: 0; }
-        .subtitle { 
-            font-size: 14px; color: #5d7069; margin-top: 15px; line-height: 1.8;
-            border-left: 3px solid var(--yiqing-gold); padding-left: 15px; display: inline-block; text-align: left;
-        }
         .countdown-container { 
             background: var(--yiqing-main); color: white; padding: 15px; border-radius: 20px;
             text-align: center; margin: 25px 0;
         }
         .timer { font-family: 'Inter', monospace; font-size: 22px; font-weight: 800; color: #ffca28; }
+        
+        /* 列表排序動畫 */
         .list-move { transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+        
         .candidate-item { 
             background: white; border: 1px solid #edf2f0; padding: 20px; border-radius: 24px; 
             margin-bottom: 15px; transition: 0.4s; position: relative;
         }
-        .is-leading { border: 1px solid var(--yiqing-gold); box-shadow: 0 10px 25px rgba(212, 175, 55, 0.1); }
+
+        /* --- 前三名特殊樣式 --- */
+        .rank-0 { background: var(--rank1); border: 2px solid #fbc02d; }
+        .rank-1 { background: var(--rank2); border: 2px solid #bdbdbd; }
+        .rank-2 { background: var(--rank3); border: 2px solid #ffb74d; }
+
         .info-row { display: flex; justify-content: space-between; align-items: center; }
         .name { font-weight: 800; font-size: 17px; color: var(--yiqing-main); }
         .vote-stats { font-weight: 900; color: #1a1a1a; font-size: 20px; }
-        .progress-track { height: 8px; background: #f0f4f2; border-radius: 10px; overflow: hidden; margin: 15px 0; }
+        
+        .progress-track { height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; margin: 15px 0; }
         .progress-fill { height: 100%; background: var(--yiqing-main); transition: width 1.2s ease; }
+        
         .vote-btn { 
             width: 100%; padding: 14px; border: none; border-radius: 15px; 
             font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 15px;
         }
         .btn-ready { background: var(--yiqing-main); color: white; }
-        .btn-ready:hover { background: var(--yiqing-light); transform: translateY(-2px); }
         .btn-voted-target { background: #e8f5e9; color: #2e7d32; cursor: default; }
-        .btn-unvoted { background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; cursor: default; }
+        .btn-unvoted { background: rgba(0,0,0,0.05); color: #94a3b8; cursor: default; }
+        
         .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 35px; line-height: 1.6; }
         .warning-text { color: #e53935; font-weight: bold; margin-bottom: 5px; display: block; }
     </style>
@@ -74,34 +76,44 @@
 <div id="app" class="vote-card" v-cloak>
     <div class="header">
         <h1>🏆 宜慶地政人氣王</h1>
-        <div class="subtitle">歡迎投下喜歡的團隊，為他們在 <strong>✨ 感恩餐會 ✨</strong> 爭取最高榮耀！</div>
+        <div style="font-size: 14px; color: #5d7069; margin-top: 10px;">歡迎投下喜歡的團隊，為他們爭取榮耀！</div>
     </div>
 
     <div class="countdown-container">
-        <div style="font-size: 13px; opacity: 0.9;">投票截止倒數</div>
+        <div style="font-size: 12px; opacity: 0.9;">投票截止倒數</div>
         <div class="timer">{{ countdownText }}</div>
     </div>
 
     <transition-group name="list" tag="div">
-        <div v-for="(p, index) in sortedPlayers" :key="p.name" class="candidate-item" :class="{'is-leading': index === 0 && p.votes > 0}">
+        <div v-for="(p, index) in sortedPlayers" :key="p.name" 
+             class="candidate-item" 
+             :class="'rank-' + index">
+            
             <div class="info-row">
-                <span class="name">{{ p.name }}</span>
+                <span class="name">
+                    <span v-if="index === 0">🥇 </span>
+                    <span v-if="index === 1">🥈 </span>
+                    <span v-if="index === 2">🥉 </span>
+                    {{ p.name }}
+                </span>
                 <span class="vote-stats">{{ p.votes }} <small style="font-size: 12px;">票</small></span>
             </div>
-            <div class="progress-track"><div class="progress-fill" :style="{ width: getPercent(p.votes) + '%' }"></div></div>
+            
+            <div class="progress-track">
+                <div class="progress-fill" :style="{ width: getPercent(p.votes) + '%' }"></div>
+            </div>
             
             <template v-if="!isExpired">
-                <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">👍 請支持我們！投一票</button>
-                <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">🎉 感謝您的支持！</button>
-                <button v-else class="vote-btn btn-unvoted">加油加油 😭</button>
+                <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">👍 投給我們</button>
+                <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">🎉 已支持</button>
+                <button v-else class="vote-btn btn-unvoted">已投票</button>
             </template>
-            <button v-else class="vote-btn" style="background: #f1f5f9; color: #cbd5e1; cursor: not-allowed;">活動已截止</button>
         </div>
     </transition-group>
 
     <div class="footer">
         <span class="warning-text">⚠️ 為維護公平性，系統設有異常監控機制，若偵測到惡意灌票，主辦單位保留扣除異常票數之權利。</span>
-        © 2026 LIN LANDER MARKETING  | 總票數：{{ totalVotes }}
+        © 2026 YIQING LAND ADMINISTRATION | 總票數：{{ totalVotes }}
     </div>
 </div>
 
@@ -119,7 +131,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const votesRef = db.ref('yiqing_FINAL_VOTES_2026');
-    const logsRef = db.ref('yiqing_VOTE_LOGS_2026'); // 新增紀錄資料夾
+    const logsRef = db.ref('yiqing_VOTE_LOGS_2026');
 
     const { createApp } = Vue;
     createApp({
@@ -155,7 +167,7 @@
                 votesRef.get().then((s) => {
                     const data = s.val();
                     if (data) Object.keys(this.playersData).forEach(k => { if(data[k] !== undefined) this.playersData[k] = data[k] });
-                }).catch(e => console.log("系統繁忙中"));
+                });
             },
             getPercent(v) { return this.totalVotes === 0 ? 0 : ((v / this.totalVotes) * 100).toFixed(1); },
             updateTimer() {
@@ -167,12 +179,11 @@
             },
             handleVote(name) {
                 if (this.hasVoted || this.isExpired) return;
-                this.launchConfetti();
                 
                 // 1. 增加票數
                 votesRef.child(name).transaction(v => (v || 0) + 1);
                 
-                // 2. 寫入時間紀錄（當作證據）
+                // 2. 寫入證據紀錄
                 logsRef.push({
                     target: name,
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
@@ -183,10 +194,8 @@
                 this.votedTarget = name;
                 localStorage.setItem('voted_FINAL_2026', 'true');
                 localStorage.setItem('voted_target_FINAL', name);
-                setTimeout(this.refreshData, 1000);
-            },
-            launchConfetti() {
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#215440', '#d4af37'] });
+                setTimeout(this.refreshData, 1000);
             }
         }
     }).mount('#app');
