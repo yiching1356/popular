@@ -14,9 +14,6 @@
             --yiqing-main: #215440;
             --yiqing-light: #2d6a53;
             --yiqing-gold: #d4af37;
-            --rank1: #fff9c4; /* 金 */
-            --rank2: #f5f5f5; /* 銀 */
-            --rank3: #fff3e0; /* 銅 */
         }
         [v-cloak] { display: none; }
         body { 
@@ -39,24 +36,24 @@
         }
         .timer { font-family: 'Inter', monospace; font-size: 22px; font-weight: 800; color: #ffca28; }
         
-        /* 列表排序動畫 */
         .list-move { transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
         
         .candidate-item { 
             background: white; border: 1px solid #edf2f0; padding: 20px; border-radius: 24px; 
             margin-bottom: 15px; transition: 0.4s; position: relative;
         }
-
-        /* --- 前三名特殊樣式 --- */
-        .rank-0 { background: var(--rank1); border: 2px solid #fbc02d; }
-        .rank-1 { background: var(--rank2); border: 2px solid #bdbdbd; }
-        .rank-2 { background: var(--rank3); border: 2px solid #ffb74d; }
+        /* 前三名邊框稍微加深強化視覺，但不改底色 */
+        .is-leading { border: 1px solid var(--yiqing-gold); }
 
         .info-row { display: flex; justify-content: space-between; align-items: center; }
         .name { font-weight: 800; font-size: 17px; color: var(--yiqing-main); }
+        .rank-tag { font-size: 12px; margin-left: 8px; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        .rank-1 { color: #d4af37; background: #fff9e6; }
+        .rank-2 { color: #7f8c8d; background: #f5f5f5; }
+        .rank-3 { color: #a67c52; background: #fff3e6; }
+
         .vote-stats { font-weight: 900; color: #1a1a1a; font-size: 20px; }
-        
-        .progress-track { height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; margin: 15px 0; }
+        .progress-track { height: 8px; background: #f0f4f2; border-radius: 10px; overflow: hidden; margin: 15px 0; }
         .progress-fill { height: 100%; background: var(--yiqing-main); transition: width 1.2s ease; }
         
         .vote-btn { 
@@ -64,8 +61,9 @@
             font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 15px;
         }
         .btn-ready { background: var(--yiqing-main); color: white; }
+        .btn-ready:hover { background: var(--yiqing-light); transform: translateY(-2px); }
         .btn-voted-target { background: #e8f5e9; color: #2e7d32; cursor: default; }
-        .btn-unvoted { background: rgba(0,0,0,0.05); color: #94a3b8; cursor: default; }
+        .btn-unvoted { background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; cursor: default; }
         
         .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 35px; line-height: 1.6; }
         .warning-text { color: #e53935; font-weight: bold; margin-bottom: 5px; display: block; }
@@ -87,27 +85,27 @@
     <transition-group name="list" tag="div">
         <div v-for="(p, index) in sortedPlayers" :key="p.name" 
              class="candidate-item" 
-             :class="'rank-' + index">
+             :class="{'is-leading': index < 3 && p.votes > 0}">
             
             <div class="info-row">
                 <span class="name">
-                    <span v-if="index === 0">🥇 </span>
-                    <span v-if="index === 1">🥈 </span>
-                    <span v-if="index === 2">🥉 </span>
                     {{ p.name }}
+                    <span v-if="index === 0 && p.votes > 0" class="rank-tag rank-1">🏆 領先中</span>
+                    <span v-else-if="index === 1 && p.votes > 0" class="rank-tag rank-2">🥈 第二名</span>
+                    <span v-else-if="index === 2 && p.votes > 0" class="rank-tag rank-3">🥉 第三名</span>
                 </span>
                 <span class="vote-stats">{{ p.votes }} <small style="font-size: 12px;">票</small></span>
             </div>
             
-            <div class="progress-track">
-                <div class="progress-fill" :style="{ width: getPercent(p.votes) + '%' }"></div>
-            </div>
+            <div class="progress-track"><div class="progress-fill" :style="{ width: getPercent(p.votes) + '%' }"></div></div>
             
             <template v-if="!isExpired">
-                <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">👍 投給我們</button>
-                <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">🎉 已支持</button>
-                <button v-else class="vote-btn btn-unvoted">已投票</button>
+                <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">👍 請支持我們！投一票</button>
+                
+                <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">🎉 感謝您的支持！</button>
+                <button v-else class="vote-btn btn-unvoted">加油加油 😭</button>
             </template>
+            <button v-else class="vote-btn" style="background: #f1f5f9; color: #cbd5e1; cursor: not-allowed;">活動已截止</button>
         </div>
     </transition-group>
 
@@ -180,10 +178,9 @@
             handleVote(name) {
                 if (this.hasVoted || this.isExpired) return;
                 
-                // 1. 增加票數
                 votesRef.child(name).transaction(v => (v || 0) + 1);
                 
-                // 2. 寫入證據紀錄
+                // 證據紀錄：後台會顯示投票時間
                 logsRef.push({
                     target: name,
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
