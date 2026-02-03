@@ -42,7 +42,6 @@
             background: white; border: 1px solid #edf2f0; padding: 20px; border-radius: 24px; 
             margin-bottom: 15px; transition: 0.4s; position: relative;
         }
-        /* 前三名邊框稍微加深強化視覺，但不改底色 */
         .is-leading { border: 1px solid var(--yiqing-gold); }
 
         .info-row { display: flex; justify-content: space-between; align-items: center; }
@@ -101,7 +100,6 @@
             
             <template v-if="!isExpired">
                 <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">👍 請支持我們！投一票</button>
-                
                 <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">🎉 感謝您的支持！</button>
                 <button v-else class="vote-btn btn-unvoted">加油加油 😭</button>
             </template>
@@ -110,8 +108,8 @@
     </transition-group>
 
     <div class="footer">
-        <span class="warning-text">⚠️ 為維護公平性，系統設有異常監控機制，若偵測到惡意灌票，主辦單位保留扣除異常票數之權利。</span>
-        © 2026 LIN LANDER MARKETING | 總票數：{{ totalVotes }}
+        <span class="warning-text">⚠️ 本投票設有智慧追蹤，嚴禁以切換無痕或清理緩存等方式惡意灌票，異常票數將被系統即時過濾。</span>
+        © 2026  LIN LANDER MARKETING | 總票數：{{ totalVotes }}
     </div>
 </div>
 
@@ -130,6 +128,18 @@
     const db = firebase.database();
     const votesRef = db.ref('yiqing_FINAL_VOTES_2026');
     const logsRef = db.ref('yiqing_VOTE_LOGS_2026');
+
+    // 生成設備指紋
+    function getDeviceFingerprint() {
+        const specs = [
+            navigator.userAgent.length,
+            screen.width + "x" + screen.height,
+            new Date().getTimezoneOffset(),
+            navigator.language,
+            navigator.platform
+        ];
+        return "DEV-" + btoa(specs.join("|")).substring(0, 16);
+    }
 
     const { createApp } = Vue;
     createApp({
@@ -175,14 +185,28 @@
                 const d = Math.floor(diff / (1000 * 60 * 60 * 24)), h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)), m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)), s = Math.floor((diff % (1000 * 60)) / 1000);
                 this.countdownText = `${d}天 ${h}時 ${m}分 ${s}秒`;
             },
-            handleVote(name) {
+            async handleVote(name) {
                 if (this.hasVoted || this.isExpired) return;
+
+                const deviceID = getDeviceFingerprint();
                 
+                // --- 二重鎖定：檢查後台 logs 是否已有該設備紀錄 ---
+                const snapshot = await logsRef.orderByChild('deviceID').equalTo(deviceID).limitToLast(1).get();
+                
+                if (snapshot.exists()) {
+                    alert("⚠️ 偵測到重複投票行為：\n系統識別此裝置已完成投票。為維護公平，每人限投一票。");
+                    this.hasVoted = true;
+                    localStorage.setItem('voted_FINAL_2026', 'true');
+                    return;
+                }
+                
+                // 通過檢查，執行投票
                 votesRef.child(name).transaction(v => (v || 0) + 1);
                 
-                // 證據紀錄：後台會顯示投票時間
+                // 寫入詳細 Log，包含設備指紋
                 logsRef.push({
                     target: name,
+                    deviceID: deviceID,
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     timeString: new Date().toLocaleString()
                 });
@@ -191,7 +215,14 @@
                 this.votedTarget = name;
                 localStorage.setItem('voted_FINAL_2026', 'true');
                 localStorage.setItem('voted_target_FINAL', name);
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#215440', '#d4af37'] });
+                
+                confetti({ 
+                    particleCount: 150, 
+                    spread: 70, 
+                    origin: { y: 0.6 }, 
+                    colors: ['#215440', '#d4af37'] 
+                });
+                
                 setTimeout(this.refreshData, 1000);
             }
         }
