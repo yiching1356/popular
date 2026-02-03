@@ -102,7 +102,6 @@
     const votesRef = db.ref('yiqing_FINAL_VOTES_2026');
     const logsRef = db.ref('yiqing_VOTE_LOGS_2026');
 
-    // 新增：取得今天日期
     function getTodayStr() {
         return new Date().toLocaleDateString('zh-TW', {year:'numeric', month:'2-digit', day:'2-digit'}).replace(/\//g, '-');
     }
@@ -118,7 +117,6 @@
             const today = getTodayStr();
             const savedDate = localStorage.getItem('voted_date_2026');
             return {
-                // 判斷本地儲存的日期是否為今天
                 hasVotedToday: savedDate === today,
                 votedTarget: localStorage.getItem('voted_target_today'),
                 playersData: { '永康所 ✦ 子琳所長': 0, '華平所 ✦ 瑜萍所長': 0, '安平所 ✦ 秀如所長': 0, '善化所 ✦ 杏敏所長': 0, '橋頭所 ✦ 惠婷所長': 0, '嘉義所 ✦ 美伶所長': 0, '總所 ✦ 煒澂組': 0, '總所 ✦ 佩庭組': 0, '建設部': 0 },
@@ -158,7 +156,6 @@
                 const deviceID = getDeviceFingerprint();
                 
                 try {
-                    // 雲端安全檢查：查看該裝置今天是否有投票紀錄
                     const snapshot = await logsRef.orderByChild('deviceID').equalTo(deviceID).get();
                     let alreadyVoted = false;
                     snapshot.forEach(child => {
@@ -173,13 +170,17 @@
                         return;
                     }
 
-                    // 寫入投票
+                    // 執行投票交易
                     await votesRef.child(name).transaction(v => (v || 0) + 1);
+                    
+                    // 寫入詳細 Log：包含日期、伺服器時間戳、以及可讀時間字串
                     await logsRef.push({ 
                         target: name, 
                         deviceID: deviceID, 
                         date: today,
-                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                        fullTime: new Date().toLocaleString(), // 讓後台直接看得到時間
+                        timeString: new Date().toLocaleString() // 相容性欄位
                     });
 
                     this.hasVotedToday = true;
@@ -190,7 +191,8 @@
                     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#215440', '#d4af37'] });
                     this.refreshData();
                 } catch (e) {
-                    console.error(e);
+                    console.error("投票發生錯誤:", e);
+                    alert("投票失敗，請檢查網路連線後再試一次");
                 } finally {
                     this.isChecking = false;
                 }
