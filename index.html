@@ -28,10 +28,11 @@
         .vote-stats { font-weight: 900; color: #1a1a1a; font-size: 20px; }
         .progress-track { height: 8px; background: #f0f4f2; border-radius: 10px; overflow: hidden; margin: 15px 0; }
         .progress-fill { height: 100%; background: var(--yiqing-main); transition: width 1.2s ease; }
-        .vote-btn { width: 100%; padding: 14px; border: none; border-radius: 15px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 15px; }
+        .vote-btn { width: 100%; padding: 14px; border: none; border-radius: 15px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 15px; outline: none; -webkit-tap-highlight-color: transparent; }
         .btn-ready { background: var(--yiqing-main); color: white; }
-        .btn-voted-target { background: #e8f5e9; color: #2e7d32; cursor: default; }
-        .btn-unvoted { background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; cursor: default; }
+        .btn-ready:active { transform: scale(0.98); background: var(--yiqing-light); }
+        .btn-voted-target { background: #e8f5e9; color: #2e7d32; }
+        .btn-unvoted { background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; }
         .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 35px; line-height: 1.6; }
         .warning-text { color: #e53935; font-weight: bold; margin-bottom: 5px; display: block; }
     </style>
@@ -42,10 +43,12 @@
         <h1>🏆 宜慶地政人氣王</h1>
         <div style="font-size: 14px; color: #5d7069; margin-top: 10px;">歡迎投下喜歡的團隊，為他們爭取榮耀！</div>
     </div>
+
     <div class="countdown-container">
         <div style="font-size: 12px; opacity: 0.9;">投票截止倒數</div>
         <div class="timer">{{ countdownText }}</div>
     </div>
+
     <div v-for="(p, index) in sortedPlayers" :key="p.name" class="candidate-item" :class="{'is-leading': index < 3 && p.votes > 0}">
         <div class="info-row">
             <span class="name">{{ p.name }}
@@ -55,14 +58,29 @@
             </span>
             <span class="vote-stats">{{ p.votes }} <small style="font-size: 12px;">票</small></span>
         </div>
-        <div class="progress-track"><div class="progress-fill" :style="{ width: getPercent(p.votes) + '%' }"></div></div>
+        
+        <div class="progress-track">
+            <div class="progress-fill" :style="{ width: getPercent(p.votes) + '%' }"></div>
+        </div>
+
         <template v-if="!isExpired">
-            <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">👍 請支持我們！投一票</button>
-            <button v-else-if="votedTarget === p.name" class="vote-btn btn-voted-target">🎉 感謝您的支持！</button>
-            <button v-else class="vote-btn btn-unvoted">加油加油 😭</button>
+            <button v-if="!hasVoted" class="vote-btn btn-ready" @click="handleVote(p.name)">
+                👍 請支持我們！投一票
+            </button>
+            
+            <button v-else 
+                    class="vote-btn" 
+                    :class="votedTarget === p.name ? 'btn-voted-target' : 'btn-unvoted'" 
+                    @click="showAlreadyVotedAlert">
+                {{ votedTarget === p.name ? '🎉 感謝您的支持！' : '加油加油 😭' }}
+            </button>
         </template>
-        <button v-else class="vote-btn" style="background: #f1f5f9; color: #cbd5e1; cursor: not-allowed;">活動已截止</button>
+        
+        <button v-else class="vote-btn" style="background: #f1f5f9; color: #cbd5e1; cursor: not-allowed;">
+            活動已截止
+        </button>
     </div>
+
     <div class="footer">
         <span class="warning-text">⚠️ 系統監控中，嚴禁惡意灌票，重複投票將不予計分。</span>
         © 2026 LIN LANDER MARKETING | 總票數：{{ totalVotes }}
@@ -104,7 +122,7 @@
             this.refreshData();
             this.updateTimer();
             setInterval(this.updateTimer, 1000);
-            setInterval(this.refreshData, 30000);
+            setInterval(this.refreshData, 10000); // 每 10 秒刷新一次票數
         },
         computed: {
             sortedPlayers() { return Object.keys(this.playersData).map(n => ({ name: n, votes: this.playersData[n] })).sort((a, b) => b.votes - a.votes); },
@@ -120,24 +138,32 @@
                 const d = Math.floor(diff / (1000 * 60 * 60 * 24)), h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)), m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)), s = Math.floor((diff % (1000 * 60)) / 1000);
                 this.countdownText = `${d}天 ${h}時 ${m}分 ${s}秒`;
             },
+            showAlreadyVotedAlert() {
+                alert("您已經投過票囉！\n為了維護公平性，每人限投一票。感謝您的參與 😊");
+            },
             async handleVote(name) {
-                // 攔截 1: 本地存儲
-                if (this.hasVoted) { alert("您已經投過票囉！感謝您的支持 ✨"); return; }
+                if (this.hasVoted) { this.showAlreadyVotedAlert(); return; }
                 if (this.isExpired) return;
 
                 const deviceID = getDeviceFingerprint();
                 
-                // 攔截 2: 雲端指紋檢查
+                // 雲端防護：檢查此設備是否已存在於資料庫
                 const snapshot = await logsRef.orderByChild('deviceID').equalTo(deviceID).limitToLast(1).get();
                 if (snapshot.exists()) {
-                    alert("偵測到重複投票：此裝置已完成投票囉！😊");
+                    this.showAlreadyVotedAlert();
                     this.hasVoted = true;
                     localStorage.setItem('voted_FINAL_2026', 'true');
                     return;
                 }
 
+                // 寫入投票與 Log
                 votesRef.child(name).transaction(v => (v || 0) + 1);
-                logsRef.push({ target: name, deviceID: deviceID, timestamp: firebase.database.ServerValue.TIMESTAMP, timeString: new Date().toLocaleString() });
+                logsRef.push({ 
+                    target: name, 
+                    deviceID: deviceID, 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP, 
+                    timeString: new Date().toLocaleString() 
+                });
 
                 this.hasVoted = true;
                 this.votedTarget = name;
